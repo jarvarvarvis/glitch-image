@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 
-import { MAX_UPLOAD_FILE_SIZE_MB } from '@/constants';
+import { 
+    MAX_UPLOAD_FILE_SIZE_MB,
+    SELECTED_FILE_SIZE_DISPLAY_PRECISION,
+    MEGABYTES_FACTOR 
+} from '@/constants';
 import ReactModal from 'react-modal';
 
 export default function Home() {
     const [image, setImage] = useState(null);
     const [imageURL, setImageURL] = useState(null);
+    const [selectedFileSize, setSelectedFileSize] = useState(0);
     const [isLoading, setLoading] = useState(false);
 
     const [errorMessage, setErrorMessage] = useState("");
@@ -49,6 +54,10 @@ export default function Home() {
             setModalIsOpen(true);
             return;
         }
+
+        var fileSizeInBytes = file.size;
+        var precision = Math.pow(10, SELECTED_FILE_SIZE_DISPLAY_PRECISION - 1);
+        setSelectedFileSize(Math.ceil(fileSizeInBytes / MEGABYTES_FACTOR * precision) / precision);
 
         const sourceImage = event.target.files[0];
     
@@ -155,7 +164,7 @@ export default function Home() {
                         disabled={isLoading} 
                         onChange={onUpdateClientImage}
                     ></input>
-                    <a>(Upload size: {MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
+                    <a>(Upload size: {selectedFileSize}/{MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
                 </div>
 
                 <div className="space-x-2">

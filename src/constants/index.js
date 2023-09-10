@@ -1,1 +1,4 @@
 export const MAX_UPLOAD_FILE_SIZE_MB = 10;
+export const SELECTED_FILE_SIZE_DISPLAY_PRECISION = 2;
+
+export const MEGABYTES_FACTOR = 1024 * 1024;
