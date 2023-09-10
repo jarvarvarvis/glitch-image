@@ -47,8 +47,9 @@ export default function Home() {
     async function submitToServer() {
         if (image) {
             const body = new FormData();
-            body.append("file", image);
 
+            body.append("file", image);
+            
             setLoading(true);
             fetch("/api/v1/glitch", {
                 method: "POST",
