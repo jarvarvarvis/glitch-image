@@ -1,6 +1,8 @@
 import { formidable } from "formidable";
 import { promises as fs } from "fs";
 
+import { Image } from "image-js";
+
 import { MAX_UPLOAD_FILE_SIZE_MB } from "@/constants";
 
 export const config = {
@@ -19,6 +21,7 @@ export default async function handler(req, res) {
     try {
         const data = await new Promise((resolve, reject) => {
             const form = formidable({
+                keepExtensions: true,
                 maxFileSize: MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024
             });
     
@@ -32,10 +35,18 @@ export default async function handler(req, res) {
         });
 
         var file = data.files.file[0];
+
+        // Load image and perform operations
+        let image = await Image.load(file.filepath);
+        await image.save(file.filepath);
+        
+        // Read the data of the updated file
         var imageBytes = await fs.readFile(file.filepath);
         console.log("Received data:");
         console.log(imageBytes);
-        fs.rm(file.filepath); // Remove file
+
+        // Delete the file
+        await fs.rm(file.filepath); // Remove file
 
         res.status(200).json({
             status: "OK",
@@ -43,11 +54,14 @@ export default async function handler(req, res) {
         });
     } catch (err) {
         var error = err.err;
-        console.log(error.message);
+        var message = error ? error.message : err.message;
+        var httpCode = error ? error.httpCode : err.httpCode;
+        
+        console.log(message);
 
-        res.status(error.httpCode).json({
+        res.status(httpCode || 400).json({
             error: error,
-            errorMessage: error.message
+            errorMessage: message
         });
         return;
     }
