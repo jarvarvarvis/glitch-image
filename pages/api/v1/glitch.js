@@ -1,4 +1,5 @@
 import { formidable } from "formidable";
+import { promises as fs } from "fs";
 
 export const config = {
     api: {
@@ -23,8 +24,9 @@ export default async function handler(req, res) {
         });
     });
 
-    const file = data.files.file[0];
-    console.log("Got file: " + String(file));
+    var file = data.files.file[0];
+    var fileSrc = await fs.readFile(file.filepath);
+    console.log(fileSrc);
 
     res.status(200).json({
         status: "OK",
