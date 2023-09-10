@@ -38,10 +38,21 @@ export default function Home() {
             return;
         }
 
-        const i = event.target.files[0];
+        const sourceImage = event.target.files[0];
     
-        setImage(i);
-        setImageURL(URL.createObjectURL(i));
+        setImage(sourceImage);
+        setImageURL(URL.createObjectURL(sourceImage));
+    }
+
+    function download(blob, name) {
+        var url = URL.createObjectURL(blob);
+        
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     async function submitToServer() {
@@ -55,8 +66,16 @@ export default function Home() {
                 method: "POST",
                 body
             }).then(async (response) => {
+                var responseText = await response.text();
+                var responseData = JSON.parse(responseText);
+
+                var imageBytes = responseData.imageBytes.data;
+                var imageArray = new Uint8Array(imageBytes, imageBytes.length);
+                var blob = new Blob([imageArray], {
+                    type: image.type
+                });
+                download(blob, image.name);
                 setLoading(false);
-                console.log(response);
             });
         }
     }
