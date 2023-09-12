@@ -4,6 +4,7 @@ import { promises as fs } from "fs";
 import { Image } from "image-js";
 
 import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
+import { ExtractChannelFilter } from "@/glitching/filters/extract_channel";
 
 export const config = {
     api: {
@@ -19,6 +20,7 @@ export default async function handler(req, res) {
     }
 
     try {
+        // Form parsing
         const data = await new Promise((resolve, reject) => {
             const form = formidable({
                 keepExtensions: true,
@@ -34,11 +36,13 @@ export default async function handler(req, res) {
             });
         });
 
-        var file = data.files.file[0];
-
         // Load image and perform operations
+        var file = data.files.file[0];
         let image = await Image.load(file.filepath);
-        await image.save(file.filepath);
+        var filter = new ExtractChannelFilter(2);
+        var newImage = filter.applyToImage(image);
+
+        await newImage.save(file.filepath);
         
         // Read the data of the updated file
         var imageBytes = await fs.readFile(file.filepath);
@@ -46,7 +50,7 @@ export default async function handler(req, res) {
         console.log(imageBytes);
 
         // Delete the file
-        await fs.rm(file.filepath); // Remove file
+        await fs.rm(file.filepath);
 
         res.status(200).json({
             status: "OK",
