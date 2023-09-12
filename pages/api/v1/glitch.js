@@ -8,6 +8,7 @@ import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
 import { LuminanceFilter } from "@/glitching/filters/luminance";
 import { CompositeFilter } from "@/glitching/filters/composite";
 import { ThresholdFilter } from "@/glitching/filters/threshold";
+import { MaskedSpanGatherer } from "@/glitching/gatherers/masked";
 
 export const config = {
     api: {
@@ -46,10 +47,18 @@ export default async function handler(req, res) {
             new LuminanceFilter(),
             new ThresholdFilter(0, 60)
         );
-        var newImage = filter.applyToImage(image);
+        var maskImage = filter.applyToImage(image);
 
-        await newImage.save(file.filepath);
+        var spanGatherer = new MaskedSpanGatherer(maskImage);
+        var spans = spanGatherer.gatherSpansAt(image, 0);
         
+        for (var span of spans) {
+            console.log(span);
+        }
+        
+        await maskImage.save(file.filepath);
+        console.log("Temporarily saved " + file.filepath + " to disk");
+
         // Read the data of the updated file
         var imageBytes = await fs.readFile(file.filepath);
         console.log("Received data:");
@@ -57,6 +66,7 @@ export default async function handler(req, res) {
 
         // Delete the file
         await fs.rm(file.filepath);
+        console.log("Deleted " + file.filepath);
 
         res.status(200).json({
             status: "OK",
