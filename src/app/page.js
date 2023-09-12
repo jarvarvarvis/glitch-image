@@ -91,6 +91,8 @@ export default function Home() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+
+        return url;
     }
 
     async function submitToServer() {
@@ -128,7 +130,8 @@ export default function Home() {
                 });
 
                 console.log("Got data of length " + imageBytes.length + ", now downloading.");
-                download(blob, image.name);
+                var url = download(blob, image.name);
+                setImageURL(url);
                 setLoading(false);
             }).catch(err => {
                 console.error(String(err));
