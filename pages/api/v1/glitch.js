@@ -4,7 +4,7 @@ import { promises as fs } from "fs";
 import { Image } from "image-js";
 
 import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
-import { ExtractChannelFilter } from "@/glitching/filters/extract_channel";
+import { LuminanceFilter } from "@/glitching/filters/luminance";
 
 export const config = {
     api: {
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         // Load image and perform operations
         var file = data.files.file[0];
         let image = await Image.load(file.filepath);
-        var filter = new ExtractChannelFilter(2);
+        var filter = new LuminanceFilter();
         var newImage = filter.applyToImage(image);
 
         await newImage.save(file.filepath);
