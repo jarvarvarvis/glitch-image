@@ -8,7 +8,8 @@ import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
 import { LuminanceFilter } from "@/glitching/filters/luminance";
 import { CompositeFilter } from "@/glitching/filters/composite";
 import { ThresholdFilter } from "@/glitching/filters/threshold";
-import { MaskedSpanGatherer } from "@/glitching/gatherers/masked";
+import { Glitcher } from "@/glitching/glitcher";
+import { RandomOffsetMaskedSpanGatherer } from "@/glitching/gatherers/random_offset_masked";
 
 export const config = {
     api: {
@@ -43,20 +44,27 @@ export default async function handler(req, res) {
         // Load image and perform operations
         var file = data.files.file[0];
         let image = await Image.load(file.filepath);
-        var filter = new CompositeFilter(
+        
+        // Create mask image
+        var maskFilter = new CompositeFilter(
             new LuminanceFilter(),
             new ThresholdFilter(0, 60)
         );
-        var maskImage = filter.applyToImage(image);
+        var maskImage = maskFilter.applyToImage(image);
 
-        var spanGatherer = new MaskedSpanGatherer(maskImage);
-        var spans = spanGatherer.gatherSpansAt(image, 0);
+        // Glitch the image
+        var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.75);
+        var glitcher = new Glitcher();
+
+        console.log("Starting glitching");
+        var resultImage = glitcher.glitchImage(image, spanGatherer, (x1, x2) => {
+            var a = x1[0] * 256 * 256 + x1[1] * 256 + x1[2];
+            var b = x2[0] * 256 * 256 + x2[1] * 256 + x2[2];
+            return a - b;
+        });
+        console.log("Finished glitching");
         
-        for (var span of spans) {
-            console.log(span);
-        }
-        
-        await maskImage.save(file.filepath);
+        await resultImage.save(file.filepath);
         console.log("Temporarily saved " + file.filepath + " to disk");
 
         // Read the data of the updated file
