@@ -113,7 +113,7 @@ export default function Home() {
 
                 // Get the image data from the response and create a blob
                 // that will then be downloaded.
-                var imageBytes = responseData.imageBytes.data;
+                var imageBytes = responseData.data.data;
                 var imageArray = new Uint8Array(imageBytes, imageBytes.length);
                 var blob = new Blob([imageArray], {
                     type: image.type
