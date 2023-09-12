@@ -18,7 +18,9 @@ export default function Home() {
     const [isLoading, setLoading] = useState(false);
     
     // Config-related state
-    const [cfgDownloadMask, setCfgDownloadMask] = useState(false);
+    const [cfg, setCfg] = useState({
+        downloadMask: false,
+    });
 
     // Error-related state
     const [errorMessage, setErrorMessage] = useState("");
@@ -100,9 +102,7 @@ export default function Home() {
             const body = new FormData();
 
             body.append("file", image);
-            body.append("cfg", JSON.stringify({
-                downloadMask: cfgDownloadMask,
-            }));
+            body.append("cfg", JSON.stringify(cfg));
             
             setLoading(true);
             fetch("/api/v1/glitch", {
@@ -222,9 +222,12 @@ export default function Home() {
                     <div className="flex space-x-2">
                         <input 
                             type="checkbox"
-                            checked={cfgDownloadMask}
+                            checked={cfg.downloadMask}
                             onChange={event => {
-                                setCfgDownloadMask(event.target.checked);
+                                setCfg({
+                                    ...cfg,
+                                    downloadMask: event.target.checked
+                                })
                             }}
                         />
                         <p>Download Mask?</p>
