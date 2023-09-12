@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 
 import { Image } from "image-js";
 
-import { MAX_UPLOAD_FILE_SIZE_MB } from "@/constants";
+import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
 
 export const config = {
     api: {
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         const data = await new Promise((resolve, reject) => {
             const form = formidable({
                 keepExtensions: true,
-                maxFileSize: MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024
+                maxFileSize: MAX_UPLOAD_FILE_SIZE_BYTES
             });
     
             console.log("Parsing request...");

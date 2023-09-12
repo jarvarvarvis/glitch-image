@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { 
     MAX_UPLOAD_FILE_SIZE_MB,
     SELECTED_FILE_SIZE_DISPLAY_PRECISION,
-    MEGABYTES_FACTOR 
+    MEGABYTES_FACTOR,
+    MAX_UPLOAD_FILE_SIZE_BYTES
 } from '@/constants';
 import ReactModal from 'react-modal';
 
@@ -21,6 +22,7 @@ export default function Home() {
     function resetImage() {
         setImage(null);
         setImageURL(null);
+        setSelectedFileSize(0);
     }
 
     function resetFileInput() {
@@ -56,8 +58,18 @@ export default function Home() {
         }
 
         var fileSizeInBytes = file.size;
+
         var precision = Math.pow(10, SELECTED_FILE_SIZE_DISPLAY_PRECISION - 1);
-        setSelectedFileSize(Math.ceil(fileSizeInBytes / MEGABYTES_FACTOR * precision) / precision);
+        var displaySize = Math.ceil(fileSizeInBytes / MEGABYTES_FACTOR * precision) / precision;
+
+        if (fileSizeInBytes > MAX_UPLOAD_FILE_SIZE_BYTES) {
+            resetImage();
+            setErrorMessage("Selected file exceeds maximum size of " + MAX_UPLOAD_FILE_SIZE_MB + "MB");
+            setModalIsOpen(true);
+            return;
+        }
+        
+        setSelectedFileSize(displaySize);
 
         const sourceImage = event.target.files[0];
     
@@ -94,7 +106,6 @@ export default function Home() {
                 // the user about the error.
                 if (response.status != 200) {
                     setLoading(false);
-                    console.error(responseData.errorMessage);
                     setErrorMessage(responseData.errorMessage);
                     setModalIsOpen(true);
                     return;
@@ -164,12 +175,12 @@ export default function Home() {
                         disabled={isLoading} 
                         onChange={onUpdateClientImage}
                     ></input>
-                    <a>(Upload size: {selectedFileSize}/{MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
                 </div>
+                <a>(Upload size: {selectedFileSize}/{MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
 
                 <div className="space-x-2">
                     <button
-                        className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200"
+                        className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200 disabled:bg-slate-100 hover:scale-105"
                         type="button" 
                         disabled={isLoading} 
                         onClick={submitToServer}
@@ -177,7 +188,7 @@ export default function Home() {
                         Submit
                     </button>
                     <button
-                        className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200"
+                        className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200 disabled:bg-slate-100 hover:scale-105"
                         type="button" 
                         disabled={isLoading} 
                         onClick={_ => {
