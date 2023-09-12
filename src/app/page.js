@@ -176,7 +176,7 @@ export default function Home() {
                         onChange={onUpdateClientImage}
                     ></input>
                 </div>
-                <a>(Upload size: {selectedFileSize}/{MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
+                <a>(Upload size: {selectedFileSize} / {MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
 
                 <div className="space-x-2">
                     <button
