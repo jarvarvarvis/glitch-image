@@ -4,7 +4,10 @@ import { promises as fs } from "fs";
 import { Image } from "image-js";
 
 import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
+
 import { LuminanceFilter } from "@/glitching/filters/luminance";
+import { CompositeFilter } from "@/glitching/filters/composite";
+import { ThresholdFilter } from "@/glitching/filters/threshold";
 
 export const config = {
     api: {
@@ -39,7 +42,10 @@ export default async function handler(req, res) {
         // Load image and perform operations
         var file = data.files.file[0];
         let image = await Image.load(file.filepath);
-        var filter = new LuminanceFilter();
+        var filter = new CompositeFilter(
+            new LuminanceFilter(),
+            new ThresholdFilter(0, 60)
+        );
         var newImage = filter.applyToImage(image);
 
         await newImage.save(file.filepath);
