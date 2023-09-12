@@ -11,11 +11,16 @@ import {
 import ReactModal from 'react-modal';
 
 export default function Home() {
+    // Image-related state
     const [image, setImage] = useState(null);
     const [imageURL, setImageURL] = useState(null);
     const [selectedFileSize, setSelectedFileSize] = useState(0);
     const [isLoading, setLoading] = useState(false);
+    
+    // Config-related state
+    const [cfgDownloadMask, setCfgDownloadMask] = useState(false);
 
+    // Error-related state
     const [errorMessage, setErrorMessage] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     
@@ -93,6 +98,9 @@ export default function Home() {
             const body = new FormData();
 
             body.append("file", image);
+            body.append("cfg", JSON.stringify({
+                downloadMask: cfgDownloadMask,
+            }));
             
             setLoading(true);
             fetch("/api/v1/glitch", {
@@ -159,7 +167,9 @@ export default function Home() {
                     _ => {
                         setModalIsOpen(false);
                     }
-                }>Close</button>
+                }>
+                    Close
+                </button>
             </ReactModal>
 
             <form className="flex-auto p-6 space-y-5">
@@ -174,8 +184,9 @@ export default function Home() {
                         accept="image/png, image/jpeg"
                         disabled={isLoading} 
                         onChange={onUpdateClientImage}
-                    ></input>
+                    />
                 </div>
+
                 <a>(Upload size: {selectedFileSize} / {MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
 
                 <div className="space-x-2">
@@ -198,6 +209,23 @@ export default function Home() {
                     >
                         Reset
                     </button>
+                </div>
+
+                <h1 className="flex-auto text-lg font-semibold">
+                    Configuration
+                </h1>
+
+                <div>
+                    <div className="flex space-x-2">
+                        <input 
+                            type="checkbox"
+                            checked={cfgDownloadMask}
+                            onChange={event => {
+                                setCfgDownloadMask(event.target.checked);
+                            }}
+                        />
+                        <p>Download Mask?</p>
+                    </div>
                 </div>
             </form>
         </div>

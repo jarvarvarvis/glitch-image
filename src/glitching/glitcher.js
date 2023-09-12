@@ -9,7 +9,7 @@ export class Glitcher {
         });
 
         for (var y = 0; y < image.height; y++) {
-            console.log("Starting on row " + y);
+            //console.log("Starting on row " + y);
             var spans = spanGatherer.gatherSpansAt(image, y);
 
             // Gather the colors in all spans and sort them

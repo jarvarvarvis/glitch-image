@@ -17,6 +17,25 @@ export const config = {
     }
 }
 
+async function sendFileDataToClient(res, file) {
+    console.log("Temporarily saved " + file.filepath + " to disk");
+
+    // Read the data of the file
+    var imageBytes = await fs.readFile(file.filepath);
+    console.log("Received data:");
+    console.log(imageBytes);
+
+    // Delete the file
+    await fs.rm(file.filepath);
+    console.log("Deleted " + file.filepath);
+
+    // Send data
+    res.status(200).json({
+        status: "OK",
+        data: imageBytes,
+    });
+}
+
 export default async function handler(req, res) {
     if (req.method != "POST") {
         res.status(405).json({ 
@@ -43,6 +62,7 @@ export default async function handler(req, res) {
 
         // Load image and perform operations
         var file = data.files.file[0];
+        var cfg = JSON.parse(data.fields.cfg);
         let image = await Image.load(file.filepath);
         
         // Create mask image
@@ -51,6 +71,12 @@ export default async function handler(req, res) {
             new ThresholdFilter(0, 60)
         );
         var maskImage = maskFilter.applyToImage(image);
+
+        if (cfg.downloadMask) {
+            await maskImage.save(file.filepath);
+            await sendFileDataToClient(res, file);
+            return;
+        }
 
         // Glitch the image
         var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.75);
@@ -64,22 +90,9 @@ export default async function handler(req, res) {
         });
         console.log("Finished glitching");
         
+        // Send data back to client
         await resultImage.save(file.filepath);
-        console.log("Temporarily saved " + file.filepath + " to disk");
-
-        // Read the data of the updated file
-        var imageBytes = await fs.readFile(file.filepath);
-        console.log("Received data:");
-        console.log(imageBytes);
-
-        // Delete the file
-        await fs.rm(file.filepath);
-        console.log("Deleted " + file.filepath);
-
-        res.status(200).json({
-            status: "OK",
-            data: imageBytes,
-        });
+        await sendFileDataToClient(res, file);
     } catch (err) {
         var error = err.err;
         var message = error ? error.message : err.message;
