@@ -10,6 +10,7 @@ import { CompositeFilter } from "@/glitching/filters/composite";
 import { ThresholdFilter } from "@/glitching/filters/threshold";
 import { Glitcher } from "@/glitching/glitcher";
 import { RandomOffsetMaskedSpanGatherer } from "@/glitching/gatherers/random_offset_masked";
+import { ChannelValueFilter } from "@/glitching/filters/channel_value";
 
 export const config = {
     api: {
@@ -39,7 +40,9 @@ async function sendFileDataToClient(res, file) {
 export default async function handler(req, res) {
     if (req.method != "POST") {
         res.status(405).json({ 
-            error: `Method '${req.method}' Not Allowed` 
+            error: {
+                message: `Method '${req.method}' Not Allowed` 
+            }
         });
     }
 
@@ -63,11 +66,28 @@ export default async function handler(req, res) {
         // Load image and perform operations
         var file = data.files.file[0];
         var cfg = JSON.parse(data.fields.cfg);
+        console.log(cfg);
         let image = await Image.load(file.filepath);
         
         // Create mask image
+        var filterMap = new Map();
+        filterMap.set("luminance", () => new LuminanceFilter());
+        filterMap.set("red", () => new ChannelValueFilter(0));
+        filterMap.set("green", () => new ChannelValueFilter(1));
+        filterMap.set("blue", () => new ChannelValueFilter(2));
+
+        var getFilter = filterMap.get(cfg.filterFunction);
+        if (!getFilter) {
+            res.status(400).json({
+                error: {
+                    message: `Filter function '${cfg.filterFunction}' was not found` 
+                },
+            });
+            return;
+        }
+
         var maskFilter = new CompositeFilter(
-            new LuminanceFilter(),
+            getFilter(),
             new ThresholdFilter(cfg.minThreshold, cfg.maxThreshold)
         );
         var maskImage = maskFilter.applyToImage(image);
@@ -101,8 +121,9 @@ export default async function handler(req, res) {
         console.log(message);
 
         res.status(httpCode || 400).json({
-            error: error,
-            errorMessage: message
+            error: {
+                message: message
+            },
         });
         return;
     }

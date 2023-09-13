@@ -28,8 +28,10 @@ export default function Home() {
     // Config-related state
     const [cfg, setCfg] = useState({
         getFilterMask: false,
+        filterFunction: "luminance",
         minThreshold: 0,
-        maxThreshold: 60
+        maxThreshold: 60,
+        sortComparisonFunction: "rgb",
     });
 
     // Error-related state
@@ -142,7 +144,7 @@ export default function Home() {
                 if (response.status != 200) {
                     resetImage();
                     setLoading(false);
-                    setError("Server", responseData.errorMessage);
+                    setError("Server", responseData.error.message);
                     return;
                 }
 
@@ -265,7 +267,23 @@ export default function Home() {
                         />
                     </div>
 
-                    <hr className="border-dashed w-64" />
+                    <div className="flex space-x-2">
+                        <p>Filter Function: </p>
+                        <select 
+                            className="text-black"
+                            onChange={event => {
+                                setCfg({
+                                    ...cfg,
+                                    filterFunction: event.target.value
+                                })
+                            }}
+                        >
+                            <option value="luminance">Luminance</option>
+                            <option value="red">Red</option>
+                            <option value="green">Green</option>
+                            <option value="blue">Blue</option>
+                        </select>
+                    </div>
 
                     <div className="space-y-0 justify-items-end grid">
                         <div className="flex space-x-2">
@@ -286,6 +304,25 @@ export default function Home() {
                                 setValue={value => setMaxThreshold(value)}
                             />
                         </div>
+                    </div>
+
+                    <hr className="border-dashed w-64" />
+
+                    <div className="flex space-x-2">
+                        <p>Sort Comparison Function: </p>
+                        <select 
+                            className="text-black"
+                            onChange={event => {
+                                setCfg({
+                                    ...cfg,
+                                    sortComparisonFunction: event.target.value
+                                })
+                            }}
+                        >
+                            <option value="rgb">RGB</option>
+                            <option value="bgr">BGR</option>
+                            <option value="luminance">Luminance</option>
+                        </select>
                     </div>
                 </div>
             </form>

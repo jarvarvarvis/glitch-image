@@ -1,27 +1,23 @@
 import { Filter } from "../filter";
 
-export class ExtractChannelFilter extends Filter {
+export class ChannelValueFilter extends Filter {
     constructor(channel) {
         super();
         this.channel = channel;
     }
 
     applyToPixel(x, y, pixel) {
-        if (this.channel < result.length) {
+        if (this.channel < pixel.length) {
+            var value = pixel[this.channel];
+            
             var result = [];
             for (var i = 0; i < pixel.length; i++) {
-                result.push(0);
+                result.push(value);
             }
-            
-            var value = pixel[this.channel];
-            result[this.channel] = value;
+
             return result;
         }
 
         return pixel;
-    }
-
-    applyToImage(image) {
-        return super.applyToImage(image);
     }
 }
