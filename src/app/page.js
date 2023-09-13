@@ -2,34 +2,50 @@
 
 import { useState } from 'react';
 
+import ReactModal from 'react-modal';
+
+
 import { 
     MAX_UPLOAD_FILE_SIZE_MB,
     SELECTED_FILE_SIZE_DISPLAY_PRECISION,
     MEGABYTES_FACTOR,
     MAX_UPLOAD_FILE_SIZE_BYTES
 } from '@/constants';
-import ReactModal from 'react-modal';
+
+import { Slider } from '@/components/slider';
+import { ActionButton } from '@/components/action_button';
 
 export default function Home() {
     // Image-related state
     const [image, setImage] = useState(null);
     const [imageURL, setImageURL] = useState(null);
+    const [cachedImageBlob, setCachedImageBlob] = useState(null);
     const [selectedFileSize, setSelectedFileSize] = useState(0);
     const [isLoading, setLoading] = useState(false);
     
     // Config-related state
     const [cfg, setCfg] = useState({
         downloadMask: false,
+        minThreshold: 0,
+        maxThreshold: 60
     });
 
     // Error-related state
     const [errorMessage, setErrorMessage] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
+
+    // Error-related functions
+    function setError(message) {
+        setErrorMessage(message);
+        setModalIsOpen(true);
+    }
     
+    // Image and uploading-related functions
     function resetImage() {
         setImage(null);
         setImageURL(null);
         setSelectedFileSize(0);
+        setCachedImageBlob(null);
     }
 
     function resetFileInput() {
@@ -42,8 +58,7 @@ export default function Home() {
         // Files array exists
         if (!event.target.files) {
             resetImage();
-            setErrorMessage("No files were selected");
-            setModalIsOpen(true);
+            setError("No files were selected");
             return;
         }
 
@@ -51,16 +66,14 @@ export default function Home() {
         var file = event.target.files[0];
         if (!file) {
             resetImage();
-            setErrorMessage("No files or file input was invalid were selected");
-            setModalIsOpen(true);
+            setError("No files or file input was invalid were selected");
             return;
         }
 
         // The file's mime type is correct (PNG or JPG image)
         if (file.type != "image/png" && file.type != "image/jpeg") {
             resetImage();
-            setErrorMessage("Selected file doesn't have supported type (supported: png, jpg/jpeg)");
-            setModalIsOpen(true);
+            setError("Selected file doesn't have supported type (supported: png, jpg/jpeg)");
             return;
         }
 
@@ -71,8 +84,7 @@ export default function Home() {
 
         if (fileSizeInBytes > MAX_UPLOAD_FILE_SIZE_BYTES) {
             resetImage();
-            setErrorMessage("Selected file exceeds maximum size of " + MAX_UPLOAD_FILE_SIZE_MB + "MB");
-            setModalIsOpen(true);
+            setError("Selected file exceeds maximum size of " + MAX_UPLOAD_FILE_SIZE_MB + "MB");
             return;
         }
         
@@ -85,6 +97,11 @@ export default function Home() {
     }
 
     function download(blob, name) {
+        if (!blob) {
+            setError("No image was submitted to the server yet (no cached image blob)");
+            return;
+        }
+
         var url = URL.createObjectURL(blob);
         
         const a = document.createElement("a");
@@ -104,7 +121,9 @@ export default function Home() {
             body.append("file", image);
             body.append("cfg", JSON.stringify(cfg));
             
+            setCachedImageBlob(null);
             setLoading(true);
+
             fetch("/api/v1/glitch", {
                 method: "POST",
                 body
@@ -116,13 +135,11 @@ export default function Home() {
                 // the user about the error.
                 if (response.status != 200) {
                     setLoading(false);
-                    setErrorMessage(responseData.errorMessage);
-                    setModalIsOpen(true);
+                    setError(responseData.errorMessage);
                     return;
                 }
 
                 // Get the image data from the response and create a blob
-                // that will then be downloaded.
                 var imageBytes = responseData.data.data;
                 var imageArray = new Uint8Array(imageBytes, imageBytes.length);
                 var blob = new Blob([imageArray], {
@@ -130,15 +147,35 @@ export default function Home() {
                 });
 
                 console.log("Got data of length " + imageBytes.length + ", now downloading.");
-                var url = download(blob, image.name);
-                setImageURL(url);
+                
+                setCachedImageBlob(blob);
                 setLoading(false);
+
+                var url = URL.createObjectURL(blob);
+                setImageURL(url);
             }).catch(err => {
-                console.error(String(err));
-                setErrorMessage(String(err));
-                setModalIsOpen(true);
+                setError(String(err));
             });
         }
+    }
+
+    // Config-related functions
+    function setMinThreshold(minThreshold) {
+        var maxThreshold = Math.max(minThreshold, cfg.maxThreshold);
+        setCfg({
+            ...cfg,
+            minThreshold: parseInt(minThreshold),
+            maxThreshold: parseInt(maxThreshold),
+        })
+    }
+
+    function setMaxThreshold(maxThreshold) {
+        var minThreshold = Math.min(maxThreshold, cfg.minThreshold);
+        setCfg({
+            ...cfg,
+            minThreshold: parseInt(minThreshold),
+            maxThreshold: parseInt(maxThreshold),
+        })
     }
 
     return (
@@ -166,11 +203,10 @@ export default function Home() {
             >
                 <h1 className="text-lg font-semibold">Error</h1>
                 <p>{errorMessage}</p>
-                <button className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200" onClick={
-                    _ => {
-                        setModalIsOpen(false);
-                    }
-                }>
+                <button 
+                    className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200" 
+                    onClick={_ => setModalIsOpen(false)}
+                >
                     Close
                 </button>
             </ReactModal>
@@ -193,32 +229,29 @@ export default function Home() {
                 <a>(Upload size: {selectedFileSize} / {MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
 
                 <div className="space-x-2">
-                    <button
-                        className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200 disabled:bg-slate-100 hover:scale-105"
-                        type="button" 
-                        disabled={isLoading} 
-                        onClick={submitToServer}
-                    >
-                        Submit
-                    </button>
-                    <button
-                        className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200 disabled:bg-slate-100 hover:scale-105"
-                        type="button" 
+                    <ActionButton text="Submit" disabled={isLoading} onClick={submitToServer} />
+                    <ActionButton 
+                        text="Reset" 
                         disabled={isLoading} 
                         onClick={_ => {
                             resetFileInput();
                             resetImage();
                         }}
-                    >
-                        Reset
-                    </button>
+                    />
+                    <ActionButton 
+                        text="Download Result" 
+                        disabled={isLoading || cachedImageBlob == null} 
+                        onClick={_ => {
+                            download(cachedImageBlob, image.name);
+                        }}
+                    />
                 </div>
 
                 <h1 className="flex-auto text-lg font-semibold">
                     Configuration
                 </h1>
 
-                <div>
+                <div className="space-y-4 grid justify-items-start w-100">
                     <div className="flex space-x-2">
                         <input 
                             type="checkbox"
@@ -231,6 +264,29 @@ export default function Home() {
                             }}
                         />
                         <p>Download Mask?</p>
+                    </div>
+
+                    <hr className="border-dashed w-64" />
+
+                    <div className="space-y-0 justify-items-end grid">
+                        <div className="flex space-x-2">
+                            <Slider
+                                text="Min Threshold: "
+                                min={0}
+                                max={255}
+                                value={cfg.minThreshold}
+                                setValue={value => setMinThreshold(value)}
+                            />
+                        </div>
+                        <div className="flex space-x-2">
+                            <Slider
+                                text="Max Threshold: "
+                                min={0}
+                                max={255}
+                                value={cfg.maxThreshold}
+                                setValue={value => setMaxThreshold(value)}
+                            />
+                        </div>
                     </div>
                 </div>
             </form>

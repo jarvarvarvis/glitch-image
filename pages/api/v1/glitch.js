@@ -68,7 +68,7 @@ export default async function handler(req, res) {
         // Create mask image
         var maskFilter = new CompositeFilter(
             new LuminanceFilter(),
-            new ThresholdFilter(0, 60)
+            new ThresholdFilter(cfg.minThreshold, cfg.maxThreshold)
         );
         var maskImage = maskFilter.applyToImage(image);
 
