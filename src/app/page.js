@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 
-import ReactModal from 'react-modal';
-
-
 import { 
     MAX_UPLOAD_FILE_SIZE_MB,
     SELECTED_FILE_SIZE_DISPLAY_PRECISION,
@@ -14,6 +11,7 @@ import {
 
 import { Slider } from '@/components/slider';
 import { ActionButton } from '@/components/action_button';
+import { ErrorModal } from '@/components/error_modal';
 
 export default function Home() {
     // Image-related state
@@ -184,32 +182,11 @@ export default function Home() {
                 <img src={imageURL}></img>
             </div>
             
-            <ReactModal
-                className="
-                    absolute 
-                    top-1/2 left-1/2 
-                    grid justify-center items-center 
-                    translate-x-[-50%] translate-y-[-50%] 
-                    space-y-3 p-3 
-                    bg-neutral-900
-                    rounded-xl
-                "
-                style={{
-                    overlay: {
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    }
-                }}
-                isOpen={modalIsOpen}
-            >
-                <h1 className="text-lg font-semibold">Error</h1>
-                <p>{errorMessage}</p>
-                <button 
-                    className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200" 
-                    onClick={_ => setModalIsOpen(false)}
-                >
-                    Close
-                </button>
-            </ReactModal>
+            <ErrorModal 
+                isOpen={modalIsOpen} 
+                setModalIsOpen={setModalIsOpen}
+                errorMessage={errorMessage} 
+            />
 
             <form className="flex-auto p-6 space-y-5">
                 <h1 className="flex-auto text-lg font-semibold">
