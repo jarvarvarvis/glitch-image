@@ -5,12 +5,20 @@ import { Image } from "image-js";
 
 import { MAX_UPLOAD_FILE_SIZE_BYTES } from "@/constants";
 
+import { Glitcher } from "@/glitching/glitcher";
+
 import { LuminanceFilter } from "@/glitching/filters/luminance";
 import { CompositeFilter } from "@/glitching/filters/composite";
 import { ThresholdFilter } from "@/glitching/filters/threshold";
-import { Glitcher } from "@/glitching/glitcher";
-import { RandomOffsetMaskedSpanGatherer } from "@/glitching/gatherers/random_offset_masked";
 import { ChannelValueFilter } from "@/glitching/filters/channel_value";
+
+import { RandomOffsetMaskedSpanGatherer } from "@/glitching/gatherers/random_offset_masked";
+
+import { WeightedChannelEvaluator } from "@/glitching/evaluator/weighted_channel";
+import { LuminanceEvaluator } from "@/glitching/evaluator/luminance";
+
+import { AscendingComparison } from "@/glitching/comparisons/ascending";
+import { DescendingComparison } from "@/glitching/comparisons/descending";
 
 export const config = {
     api: {
@@ -90,6 +98,7 @@ export default async function handler(req, res) {
             getFilter(),
             new ThresholdFilter(cfg.minThreshold, cfg.maxThreshold)
         );
+        console.log(maskFilter);
         var maskImage = maskFilter.applyToImage(image);
 
         if (cfg.getFilterMask) {
@@ -99,14 +108,47 @@ export default async function handler(req, res) {
         }
 
         // Glitch the image
-        var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.75);
+        var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.5);
         var glitcher = new Glitcher();
 
+        var evaluatorMap = new Map();
+        evaluatorMap.set("rgb", new WeightedChannelEvaluator([0, 1, 2]));
+        evaluatorMap.set("bgr", new WeightedChannelEvaluator([2, 1, 0]));
+        evaluatorMap.set("luminance", new LuminanceEvaluator());
+
         console.log("Starting glitching");
+        var evaluator = evaluatorMap.get(cfg.sortEvaluatorFunction);
+        if (!evaluator) {
+            res.status(400).json({
+                error: {
+                    message: `Evaluator function '${cfg.sortEvaluatorFunction}' was not found` 
+                },
+            });
+            return;
+        }
+    
+        var comparisonMap = new Map();
+        comparisonMap.set("ascending", new AscendingComparison());
+        comparisonMap.set("descending", new DescendingComparison());
+
+        var comparison = comparisonMap.get(cfg.sortComparisonFunction);
+        if (!comparison) {
+            res.status(400).json({
+                error: {
+                    message: `Comparison function '${cfg.sortComparisonFunction}' was not found` 
+                },
+            });
+            return;
+        }
+
+        console.log(evaluator);
+        console.log(comparison);
+
         var resultImage = glitcher.glitchImage(image, spanGatherer, (x1, x2) => {
-            var a = x1[0] * 256 * 256 + x1[1] * 256 + x1[2];
-            var b = x2[0] * 256 * 256 + x2[1] * 256 + x2[2];
-            return a - b;
+            return comparison.comparePixels(
+                evaluator.getPixelValue(x1),
+                evaluator.getPixelValue(x2)
+            );
         });
         console.log("Finished glitching");
         

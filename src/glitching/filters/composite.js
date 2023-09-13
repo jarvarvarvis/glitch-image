@@ -4,7 +4,6 @@ export class CompositeFilter extends Filter {
     constructor(...filters) {
         super();
         this.filters = [...filters];
-        console.log(this.filters);
     }
 
     applyToPixel(x, y, pixel) {

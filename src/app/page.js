@@ -31,7 +31,8 @@ export default function Home() {
         filterFunction: "luminance",
         minThreshold: 0,
         maxThreshold: 60,
-        sortComparisonFunction: "rgb",
+        sortEvaluatorFunction: "rgb",
+        sortComparisonFunction: "ascending"
     });
 
     // Error-related state
@@ -285,7 +286,7 @@ export default function Home() {
                         </select>
                     </div>
 
-                    <div className="space-y-0 justify-items-end grid">
+                    <div className="space-y-2 justify-items-end grid">
                         <div className="flex space-x-2">
                             <Slider
                                 text="Min Threshold: "
@@ -308,21 +309,39 @@ export default function Home() {
 
                     <hr className="border-dashed w-64" />
 
-                    <div className="flex space-x-2">
-                        <p>Sort Comparison Function: </p>
-                        <select 
-                            className="text-black"
-                            onChange={event => {
-                                setCfg({
-                                    ...cfg,
-                                    sortComparisonFunction: event.target.value
-                                })
-                            }}
-                        >
-                            <option value="rgb">RGB</option>
-                            <option value="bgr">BGR</option>
-                            <option value="luminance">Luminance</option>
-                        </select>
+                    <div className="space-y-2 justify-items-end grid">
+                        <div className="flex space-x-2">
+                            <p>Sort Evaluator Function: </p>
+                            <select 
+                                className="text-black"
+                                onChange={event => {
+                                    setCfg({
+                                        ...cfg,
+                                        sortEvaluatorFunction: event.target.value
+                                    })
+                                }}
+                            >
+                                <option value="rgb">Weighted RGB</option>
+                                <option value="bgr">Weighted BGR</option>
+                                <option value="luminance">Luminance</option>
+                            </select>
+                        </div>
+
+                        <div className="flex space-x-2">
+                            <p>Comparison Function: </p>
+                            <select 
+                                className="text-black"
+                                onChange={event => {
+                                    setCfg({
+                                        ...cfg,
+                                        sortComparisonFunction: event.target.value
+                                    })
+                                }}
+                            >
+                                <option value="ascending">Ascending</option>
+                                <option value="descending">Descending</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </form>
