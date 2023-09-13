@@ -172,7 +172,7 @@ export default function Home() {
                 resetImage();
                 var message = String(err);
                 if (responseText) {
-                    message += (<br/>) + "Raw Response:" + responseText;
+                    message += ", raw response: " + responseText;
                 }
                 
                 setError("Client", message);
