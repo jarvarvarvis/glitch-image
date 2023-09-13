@@ -72,7 +72,7 @@ export default async function handler(req, res) {
         );
         var maskImage = maskFilter.applyToImage(image);
 
-        if (cfg.downloadMask) {
+        if (cfg.getFilterMask) {
             await maskImage.save(file.filepath);
             await sendFileDataToClient(res, file);
             return;

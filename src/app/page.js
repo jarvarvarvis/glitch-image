@@ -25,7 +25,7 @@ export default function Home() {
     
     // Config-related state
     const [cfg, setCfg] = useState({
-        downloadMask: false,
+        getFilterMask: false,
         minThreshold: 0,
         maxThreshold: 60
     });
@@ -255,15 +255,15 @@ export default function Home() {
                     <div className="flex space-x-2">
                         <input 
                             type="checkbox"
-                            checked={cfg.downloadMask}
+                            checked={cfg.getFilterMask}
                             onChange={event => {
                                 setCfg({
                                     ...cfg,
-                                    downloadMask: event.target.checked
+                                    getFilterMask: event.target.checked
                                 })
                             }}
                         />
-                        <p>Download Mask?</p>
+                        <p>Get Filter Mask?</p>
                     </div>
 
                     <hr className="border-dashed w-64" />
