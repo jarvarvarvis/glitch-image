@@ -133,11 +133,13 @@ export default function Home() {
             });
             setLoading(true);
 
+            var responseText = null;
+
             fetch("/api/v1/glitch", {
                 method: "POST",
                 body
             }).then(async (response) => {
-                var responseText = await response.text();
+                responseText = await response.text();
                 var responseData = JSON.parse(responseText);
                 
                 // If the request to the API was not successful, inform
@@ -168,7 +170,12 @@ export default function Home() {
                 setImageURL(url);
             }).catch(err => {
                 resetImage();
-                setError("Server", String(err));
+                var message = String(err);
+                if (responseText) {
+                    message += "\nRaw Response:\n" + responseText;
+                }
+                
+                setError("Client", message);
             });
         }
     }
