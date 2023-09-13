@@ -1,7 +1,12 @@
 import Image from "image-js";
 
 export class Glitcher {
-    glitchImage(image, spanGatherer, sortComparisonFunction) {
+    constructor(spanGatherer, sortComparisonFunction) {
+        this.spanGatherer = spanGatherer;
+        this.sortComparisonFunction = sortComparisonFunction;
+    }
+
+    glitchImage(image) {
         var resultImage = Image.createFrom({
             width: image.width,
             height: image.height,
@@ -10,7 +15,7 @@ export class Glitcher {
 
         for (var y = 0; y < image.height; y++) {
             //console.log("Starting on row " + y);
-            var spans = spanGatherer.gatherSpansAt(image, y);
+            var spans = this.spanGatherer.gatherSpansAt(image, y);
 
             // Gather the colors in all spans and sort them
             // using the provided comparison function
@@ -24,7 +29,7 @@ export class Glitcher {
                     spanColors.push(pixel);
                 }
                 
-                spanColors.sort(sortComparisonFunction);
+                spanColors.sort(this.sortComparisonFunction);
                 spanColorsList.push(spanColors);
             }
 

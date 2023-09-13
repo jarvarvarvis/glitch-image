@@ -111,9 +111,6 @@ export default async function handler(req, res) {
         }
 
         // Glitch the image
-        var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.5);
-        var glitcher = new Glitcher();
-
         var evaluatorMap = new Map();
         evaluatorMap.set("rgb", new WeightedChannelEvaluator([0, 1, 2]));
         evaluatorMap.set("bgr", new WeightedChannelEvaluator([2, 1, 0]));
@@ -150,12 +147,15 @@ export default async function handler(req, res) {
         console.log("Comparison:");
         console.log(comparison);
 
-        var resultImage = glitcher.glitchImage(image, spanGatherer, (x1, x2) => {
+        var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.5);
+        var glitcher = new Glitcher(spanGatherer, (x1, x2) => {
             return comparison.comparePixels(
                 evaluator.getPixelValue(x1),
                 evaluator.getPixelValue(x2)
             );
-        });
+        }
+        );
+        var resultImage = glitcher.glitchImage(image);
 
         console.log("Finished glitching");
         
