@@ -17,7 +17,10 @@ export default function Home() {
     // Image-related state
     const [image, setImage] = useState(null);
     const [imageURL, setImageURL] = useState(null);
-    const [cachedImageBlob, setCachedImageBlob] = useState(null);
+    const [cachedImageBlob, setCachedImageBlob] = useState({
+        blob: null,
+        fileName: "none",
+    });
     const [selectedFileSize, setSelectedFileSize] = useState(0);
     const [isLoading, setLoading] = useState(false);
     
@@ -43,7 +46,6 @@ export default function Home() {
         setImage(null);
         setImageURL(null);
         setSelectedFileSize(0);
-        setCachedImageBlob(null);
     }
 
     function resetFileInput() {
@@ -118,8 +120,11 @@ export default function Home() {
 
             body.append("file", image);
             body.append("cfg", JSON.stringify(cfg));
-            
-            setCachedImageBlob(null);
+           
+            setCachedImageBlob({
+                blob: null,
+                fileName: "none"
+            });
             setLoading(true);
 
             fetch("/api/v1/glitch", {
@@ -144,9 +149,12 @@ export default function Home() {
                     type: image.type
                 });
 
-                console.log("Got data of length " + imageBytes.length + ", now downloading.");
+                console.log("Got data of length " + imageBytes.length + ", caching for download...");
                 
-                setCachedImageBlob(blob);
+                setCachedImageBlob({
+                    blob,
+                    fileName: image.name
+                });
                 setLoading(false);
 
                 var url = URL.createObjectURL(blob);
@@ -216,10 +224,10 @@ export default function Home() {
                         }}
                     />
                     <ActionButton 
-                        text="Download Result" 
-                        disabled={isLoading || cachedImageBlob == null} 
+                        text={"Download Result (" + cachedImageBlob.fileName + ")"}
+                        disabled={isLoading || cachedImageBlob.blob == null} 
                         onClick={_ => {
-                            download(cachedImageBlob, image.name);
+                            download(cachedImageBlob.blob, cachedImageBlob.fileName);
                         }}
                     />
                 </div>
