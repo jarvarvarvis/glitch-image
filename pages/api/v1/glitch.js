@@ -31,7 +31,7 @@ async function sendFileDataToClient(res, file) {
 
     // Read the data of the file
     var imageBytes = await fs.readFile(file.filepath);
-    console.log("Received data:");
+    console.log("Image data:");
     console.log(imageBytes);
 
     // Delete the file
@@ -62,6 +62,8 @@ export default async function handler(req, res) {
                 maxFileSize: MAX_UPLOAD_FILE_SIZE_BYTES
             });
     
+            console.log("Request:");
+            console.log(req.rawHeaders);
             console.log("Parsing request...");
             form.parse(req, (err, fields, files) => {
                 if (err) 
@@ -98,6 +100,7 @@ export default async function handler(req, res) {
             getFilter(),
             new ThresholdFilter(cfg.minThreshold, cfg.maxThreshold)
         );
+        console.log("Filter:");
         console.log(maskFilter);
         var maskImage = maskFilter.applyToImage(image);
 
@@ -141,7 +144,10 @@ export default async function handler(req, res) {
             return;
         }
 
+        console.log("Evaluator:");
         console.log(evaluator);
+        
+        console.log("Comparison:");
         console.log(comparison);
 
         var resultImage = glitcher.glitchImage(image, spanGatherer, (x1, x2) => {
@@ -150,6 +156,7 @@ export default async function handler(req, res) {
                 evaluator.getPixelValue(x2)
             );
         });
+
         console.log("Finished glitching");
         
         // Send data back to client
