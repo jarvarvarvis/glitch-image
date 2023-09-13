@@ -5,7 +5,9 @@ export class LuminanceFilter extends Filter {
         super();
     }
 
-    applyToPixel(x, y, pixel) {
+    applyToPixel(image, x, y) {
+        var pixel = image.getPixelXY(x, y);
+        
         var red = pixel[0];
         var green = pixel[1];
         var blue = pixel[2];

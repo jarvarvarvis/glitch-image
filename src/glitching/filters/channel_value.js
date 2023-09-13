@@ -6,7 +6,9 @@ export class ChannelValueFilter extends Filter {
         this.channel = channel;
     }
 
-    applyToPixel(x, y, pixel) {
+    applyToPixel(image, x, y) {
+        var pixel = image.getPixelXY(x, y);
+        
         if (this.channel < pixel.length) {
             var value = pixel[this.channel];
             

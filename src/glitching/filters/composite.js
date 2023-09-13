@@ -6,12 +6,21 @@ export class CompositeFilter extends Filter {
         this.filters = [...filters];
     }
 
-    applyToPixel(x, y, pixel) {
+    applyToPixel(image, x, y) {
+        var pixel = image.getPixelXY(x, y);
+
         var currentPixel = pixel;
         for (var i = 0; i < this.filters.length; i++) {
             var filter = this.filters[i];
-            currentPixel = filter.applyToPixel(x, y, currentPixel);
+            
+            // Temporarily store the current pixel into the
+            // image to pass it to the next filter
+            var previousPixel = image.getPixelXY(x, y);
+            image.setPixelXY(x, y, currentPixel);
+            currentPixel = filter.applyToPixel(image, x, y);
+            image.setPixelXY(x, y, previousPixel);
         }
+        
         return currentPixel;
     }
     

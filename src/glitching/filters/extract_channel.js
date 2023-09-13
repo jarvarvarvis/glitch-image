@@ -6,7 +6,9 @@ export class ExtractChannelFilter extends Filter {
         this.channel = channel;
     }
 
-    applyToPixel(x, y, pixel) {
+    applyToPixel(image, x, y) {
+        var pixel = image.getPixelXY(x, y);
+        
         if (this.channel < result.length) {
             var result = [];
             for (var i = 0; i < pixel.length; i++) {

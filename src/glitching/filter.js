@@ -1,7 +1,7 @@
 import Image from "image-js";
 
 export class Filter {
-    applyToPixel(x, y, pixel) {
+    applyToPixel(image, x, y) {
     }
 
     applyToImage(image) {
@@ -13,8 +13,7 @@ export class Filter {
 
         for (var y = 0; y < image.height; y++) {
             for (var x = 0; x < image.width; x++) {
-                var pixelValue = image.getPixelXY(x, y);
-                var newPixel = this.applyToPixel(x, y, pixelValue);
+                var newPixel = this.applyToPixel(image, x, y);
                 newImage.setPixelXY(x, y, newPixel);
             }
         }

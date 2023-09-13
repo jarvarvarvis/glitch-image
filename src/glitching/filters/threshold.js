@@ -7,7 +7,9 @@ export class ThresholdFilter extends Filter {
         this.upperThreshold = upperThreshold;
     }
 
-    applyToPixel(x, y, pixel) {
+    applyToPixel(image, x, y) {
+        var pixel = image.getPixelXY(x, y);
+        
         var result = [];
         
         var inThreshold = value => {

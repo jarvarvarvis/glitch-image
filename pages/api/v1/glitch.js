@@ -81,13 +81,13 @@ export default async function handler(req, res) {
         
         // Create mask image
         var filterMap = new Map();
-        filterMap.set("luminance", () => new LuminanceFilter());
-        filterMap.set("red", () => new ChannelValueFilter(0));
-        filterMap.set("green", () => new ChannelValueFilter(1));
-        filterMap.set("blue", () => new ChannelValueFilter(2));
+        filterMap.set("luminance", new LuminanceFilter());
+        filterMap.set("red", new ChannelValueFilter(0));
+        filterMap.set("green", new ChannelValueFilter(1));
+        filterMap.set("blue", new ChannelValueFilter(2));
 
-        var getFilter = filterMap.get(cfg.filterFunction);
-        if (!getFilter) {
+        var filter = filterMap.get(cfg.filterFunction);
+        if (!filter) {
             res.status(400).json({
                 error: {
                     message: `Filter function '${cfg.filterFunction}' was not found` 
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
         }
 
         var maskFilter = new CompositeFilter(
-            getFilter(),
+            filter,
             new ThresholdFilter(cfg.minThreshold, cfg.maxThreshold)
         );
         console.log("Filter:");
@@ -163,6 +163,8 @@ export default async function handler(req, res) {
         await resultImage.save(file.filepath);
         await sendFileDataToClient(res, file);
     } catch (err) {
+        console.log(err);
+        
         var error = err.err;
         var message = error ? error.message : err.message;
         var httpCode = error ? error.httpCode : err.httpCode;
