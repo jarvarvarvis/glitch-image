@@ -20,7 +20,7 @@ export function ErrorModal(props) {
                 }}
                 isOpen={props.isOpen}
             >
-                <h1 className="text-lg font-semibold">Error</h1>
+                <h1 className="text-lg font-semibold">{props.errorTitle}</h1>
                 <p>{props.errorMessage}</p>
                 <button 
                     className="font-medium items-center justify-center h-9 px-6 rounded-md text-slate-300 border border-slate-200" 

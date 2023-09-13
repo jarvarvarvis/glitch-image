@@ -12,6 +12,7 @@ import {
 import { Slider } from '@/components/slider';
 import { ActionButton } from '@/components/action_button';
 import { ErrorModal } from '@/components/error_modal';
+import { Checkbox } from '@/components/checkbox';
 
 export default function Home() {
     // Image-related state
@@ -33,10 +34,12 @@ export default function Home() {
 
     // Error-related state
     const [errorMessage, setErrorMessage] = useState("");
+    const [errorScope, setErrorScope] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
 
     // Error-related functions
-    function setError(message) {
+    function setError(scope, message) {
+        setErrorScope(scope);
         setErrorMessage(message);
         setModalIsOpen(true);
     }
@@ -58,22 +61,22 @@ export default function Home() {
         // Files array exists
         if (!event.target.files) {
             resetImage();
-            setError("No files were selected");
+            setError("Client", "No files were selected");
             return;
         }
 
-        // Files array has a value at index 0
+        // Files array has an element
         var file = event.target.files[0];
         if (!file) {
             resetImage();
-            setError("No files or file input was invalid were selected");
+            setError("Client", "No files were selected");
             return;
         }
 
         // The file's mime type is correct (PNG or JPG image)
         if (file.type != "image/png" && file.type != "image/jpeg") {
             resetImage();
-            setError("Selected file doesn't have supported type (supported: png, jpg/jpeg)");
+            setError("Client", "Selected file doesn't have supported type (supported: png, jpg/jpeg)");
             return;
         }
 
@@ -84,7 +87,7 @@ export default function Home() {
 
         if (fileSizeInBytes > MAX_UPLOAD_FILE_SIZE_BYTES) {
             resetImage();
-            setError("Selected file exceeds maximum size of " + MAX_UPLOAD_FILE_SIZE_MB + "MB");
+            setError("Client", "Selected file exceeds maximum size of " + MAX_UPLOAD_FILE_SIZE_MB + "MB");
             return;
         }
         
@@ -98,7 +101,7 @@ export default function Home() {
 
     function download(blob, name) {
         if (!blob) {
-            setError("No image was submitted to the server yet (no cached image blob)");
+            setError("Client", "No image was submitted to the server yet (no cached image blob)");
             return;
         }
 
@@ -137,8 +140,9 @@ export default function Home() {
                 // If the request to the API was not successful, inform
                 // the user about the error.
                 if (response.status != 200) {
+                    resetImage();
                     setLoading(false);
-                    setError(responseData.errorMessage);
+                    setError("Server", responseData.errorMessage);
                     return;
                 }
 
@@ -160,7 +164,8 @@ export default function Home() {
                 var url = URL.createObjectURL(blob);
                 setImageURL(url);
             }).catch(err => {
-                setError(String(err));
+                resetImage();
+                setError("Server", String(err));
             });
         }
     }
@@ -193,15 +198,16 @@ export default function Home() {
             <ErrorModal 
                 isOpen={modalIsOpen} 
                 setModalIsOpen={setModalIsOpen}
+                errorTitle={"Error (" + errorScope + ")"}
                 errorMessage={errorMessage} 
             />
 
             <form className="flex-auto p-6 space-y-5">
-                <h1 className="flex-auto text-lg font-semibold">
+                <h1 className="text-lg font-semibold">
                     Select Image
                 </h1>
                 
-                <div className="space-x-2">
+                <div>
                     <input
                         id="fileInput"
                         type="file" 
@@ -213,42 +219,50 @@ export default function Home() {
 
                 <a>(Upload size: {selectedFileSize} / {MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
 
-                <div className="space-x-2">
-                    <ActionButton text="Submit" disabled={isLoading} onClick={submitToServer} />
-                    <ActionButton 
-                        text="Reset" 
-                        disabled={isLoading} 
-                        onClick={_ => {
-                            resetFileInput();
-                            resetImage();
-                        }}
-                    />
-                    <ActionButton 
-                        text={"Download Result (" + cachedImageBlob.fileName + ")"}
-                        disabled={isLoading || cachedImageBlob.blob == null} 
-                        onClick={_ => {
-                            download(cachedImageBlob.blob, cachedImageBlob.fileName);
-                        }}
-                    />
+                <div className="flow-root">
+                    <div className="-m-1 flex flex-wrap">
+                        <ActionButton 
+                            text="Submit"
+                            className="m-1"
+                            disabled={isLoading} 
+                            onClick={submitToServer} 
+                        />
+                        <ActionButton 
+                            text="Reset" 
+                            className="m-1"
+                            disabled={isLoading} 
+                            onClick={_ => {
+                                resetFileInput();
+                                resetImage();
+                            }}
+                        />
+                        <ActionButton 
+                            text={"Download Result (" + cachedImageBlob.fileName + ")"}
+                            className="m-1"
+                            disabled={isLoading || cachedImageBlob.blob == null} 
+                            onClick={_ => {
+                                download(cachedImageBlob.blob, cachedImageBlob.fileName);
+                            }}
+                        />
+                    </div>
                 </div>
 
-                <h1 className="flex-auto text-lg font-semibold">
+                <h1 className="text-lg font-semibold">
                     Configuration
                 </h1>
 
                 <div className="space-y-4 grid justify-items-start w-100">
                     <div className="flex space-x-2">
-                        <input 
-                            type="checkbox"
+                        <Checkbox 
                             checked={cfg.getFilterMask}
-                            onChange={event => {
+                            onChecked={checked => {
                                 setCfg({
                                     ...cfg,
-                                    getFilterMask: event.target.checked
+                                    getFilterMask: checked
                                 })
                             }}
+                            text="Get Filter Mask?"
                         />
-                        <p>Get Filter Mask?</p>
                     </div>
 
                     <hr className="border-dashed w-64" />
