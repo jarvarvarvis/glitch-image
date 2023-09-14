@@ -36,6 +36,7 @@ export default function Home() {
 
         addRandomSpanOffset: true,
         maxRandomSpanOffset: 0,
+        randomSpanOffsetChance: 0.5,
         
         sortEvaluatorFunction: "rgb",
         sortComparisonFunction: "ascending",
@@ -283,7 +284,7 @@ export default function Home() {
                         />
 
                         <Selector
-                            text="Filter Function:"
+                            text="Filter Function"
                             setValue={value => {
                                 setCfg({
                                     ...cfg,
@@ -298,14 +299,14 @@ export default function Home() {
                         </Selector>
                         
                         <Slider
-                            text="Min Threshold: "
+                            text="Min Threshold"
                             min={0}
                             max={255}
                             value={cfg.minThreshold}
                             setValue={value => setMinThreshold(value)}
                         />
                         <Slider
-                            text="Max Threshold: "
+                            text="Max Threshold"
                             min={0}
                             max={255}
                             value={cfg.maxThreshold}
@@ -329,12 +330,23 @@ export default function Home() {
                         <Slider
                             text="Max Offset"
                             min={0}
-                            max={4000}
+                            max={2000}
                             disabled={!cfg.addRandomSpanOffset}
                             value={cfg.maxRandomSpanOffset}
                             setValue={value => setCfg({
                                 ...cfg,
-                                maxRandomSpanOffset: value
+                                maxRandomSpanOffset: parseInt(value)
+                            })}
+                        />
+                        <Slider
+                            text="Offset Chance%"
+                            min={0}
+                            max={100}
+                            disabled={!cfg.addRandomSpanOffset}
+                            value={Math.round(cfg.randomSpanOffsetChance * 100)}
+                            setValue={value => setCfg({
+                                ...cfg,
+                                randomSpanOffsetChance: value / 100
                             })}
                         />
                     </ConfigContainer>
@@ -343,7 +355,7 @@ export default function Home() {
 
                     <ConfigContainer>
                         <Selector
-                            text="Sort Evaluator Function:"
+                            text="Sort Evaluator Function"
                             setValue={value => {
                                 setCfg({
                                     ...cfg,
@@ -357,7 +369,7 @@ export default function Home() {
                         </Selector>
 
                         <Selector
-                            text="Comparison Function:"
+                            text="Comparison Function"
                             setValue={value => {
                                 setCfg({
                                     ...cfg,

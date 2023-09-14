@@ -19,6 +19,7 @@ import { LuminanceEvaluator } from "@/glitching/evaluator/luminance";
 
 import { AscendingComparison } from "@/glitching/comparisons/ascending";
 import { DescendingComparison } from "@/glitching/comparisons/descending";
+import { MaskedSpanGatherer } from "@/glitching/gatherers/masked";
 
 export const config = {
     api: {
@@ -141,13 +142,19 @@ export default async function handler(req, res) {
             return;
         }
 
+        var spanGatherer = cfg.addRandomSpanOffset ?
+            new RandomOffsetMaskedSpanGatherer(maskImage, cfg.maxRandomSpanOffset, cfg.randomSpanOffsetChance) :
+            new MaskedSpanGatherer(maskImage);
+
         console.log("Evaluator:");
         console.log(evaluator);
         
         console.log("Comparison:");
         console.log(comparison);
 
-        var spanGatherer = new RandomOffsetMaskedSpanGatherer(maskImage, 100, 0.5);
+        console.log("Span Gatherer:");
+        console.log(spanGatherer);
+
         var glitcher = new Glitcher(spanGatherer, (x1, x2) => {
             return comparison.comparePixels(
                 evaluator.getPixelValue(x1),
