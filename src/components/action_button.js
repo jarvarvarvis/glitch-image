@@ -7,7 +7,7 @@ export function ActionButton(props) {
                     props.className
                 }
                 type="button"
-                disabled={props.disabled}
+                disabled={props.disabled || false}
                 onClick={props.onClick}
             >
                 {props.text}

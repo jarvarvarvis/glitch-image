@@ -13,6 +13,8 @@ import { Slider } from '@/components/slider';
 import { ActionButton } from '@/components/action_button';
 import { ErrorModal } from '@/components/error_modal';
 import { Checkbox } from '@/components/checkbox';
+import { ConfigContainer } from '@/components/config_container';
+import { Selector } from '@/components/selector';
 
 export default function Home() {
     // Image-related state
@@ -31,8 +33,12 @@ export default function Home() {
         filterFunction: "luminance",
         minThreshold: 0,
         maxThreshold: 60,
+
+        addRandomSpanOffset: true,
+        maxRandomSpanOffset: 0,
+        
         sortEvaluatorFunction: "rgb",
-        sortComparisonFunction: "ascending"
+        sortComparisonFunction: "ascending",
     });
 
     // Error-related state
@@ -217,15 +223,15 @@ export default function Home() {
                     Select Image
                 </h1>
                 
-                <div>
-                    <input
-                        id="fileInput"
-                        type="file" 
-                        accept="image/png, image/jpeg"
-                        disabled={isLoading} 
-                        onChange={onUpdateClientImage}
-                    />
-                </div>
+                <input
+                    id="fileInput"
+                    type="file" 
+                    accept="image/png, image/jpeg"
+                    disabled={isLoading} 
+                    onChange={onUpdateClientImage}
+                />
+
+                <br />
 
                 <a>(Upload size: {selectedFileSize} / {MAX_UPLOAD_FILE_SIZE_MB}MB)</a>
 
@@ -257,13 +263,16 @@ export default function Home() {
                     </div>
                 </div>
 
+                <hr className="border-dashed w-full" />
+
                 <h1 className="text-lg font-semibold">
                     Configuration
                 </h1>
 
-                <div className="space-y-4 grid justify-items-start w-100">
-                    <div className="flex space-x-2">
+                <div className="space-y-4 flow max-w-[500px]">
+                    <ConfigContainer>
                         <Checkbox 
+                            text="Get Filter Mask?"
                             checked={cfg.getFilterMask}
                             onChecked={checked => {
                                 setCfg({
@@ -271,18 +280,14 @@ export default function Home() {
                                     getFilterMask: checked
                                 })
                             }}
-                            text="Get Filter Mask?"
                         />
-                    </div>
 
-                    <div className="flex space-x-2">
-                        <p>Filter Function: </p>
-                        <select 
-                            className="text-black"
-                            onChange={event => {
+                        <Selector
+                            text="Filter Function:"
+                            setValue={value => {
                                 setCfg({
                                     ...cfg,
-                                    filterFunction: event.target.value
+                                    filterFunction: value
                                 })
                             }}
                         >
@@ -290,66 +295,54 @@ export default function Home() {
                             <option value="red">Red</option>
                             <option value="green">Green</option>
                             <option value="blue">Blue</option>
-                        </select>
-                    </div>
+                        </Selector>
+                        
+                        <Slider
+                            text="Min Threshold: "
+                            min={0}
+                            max={255}
+                            value={cfg.minThreshold}
+                            setValue={value => setMinThreshold(value)}
+                        />
+                        <Slider
+                            text="Max Threshold: "
+                            min={0}
+                            max={255}
+                            value={cfg.maxThreshold}
+                            setValue={value => setMaxThreshold(value)}
+                        />
+                    </ConfigContainer>
 
-                    <div className="space-y-2 justify-items-end grid">
-                        <div className="flex space-x-2">
-                            <Slider
-                                text="Min Threshold: "
-                                min={0}
-                                max={255}
-                                value={cfg.minThreshold}
-                                setValue={value => setMinThreshold(value)}
-                            />
-                        </div>
-                        <div className="flex space-x-2">
-                            <Slider
-                                text="Max Threshold: "
-                                min={0}
-                                max={255}
-                                value={cfg.maxThreshold}
-                                setValue={value => setMaxThreshold(value)}
-                            />
-                        </div>
-                    </div>
+                    <hr className="border-dashed" />
 
-                    <hr className="border-dashed w-64" />
+                    <ConfigContainer>
+                        <Selector
+                            text="Sort Evaluator Function:"
+                            setValue={value => {
+                                setCfg({
+                                    ...cfg,
+                                    sortEvaluatorFunction: value
+                                })
+                            }}
+                        >
+                            <option value="rgb">Weighted RGB</option>
+                            <option value="bgr">Weighted BGR</option>
+                            <option value="luminance">Luminance</option>
+                        </Selector>
 
-                    <div className="space-y-2 justify-items-end grid">
-                        <div className="flex space-x-2">
-                            <p>Sort Evaluator Function: </p>
-                            <select 
-                                className="text-black"
-                                onChange={event => {
-                                    setCfg({
-                                        ...cfg,
-                                        sortEvaluatorFunction: event.target.value
-                                    })
-                                }}
-                            >
-                                <option value="rgb">Weighted RGB</option>
-                                <option value="bgr">Weighted BGR</option>
-                                <option value="luminance">Luminance</option>
-                            </select>
-                        </div>
-
-                        <div className="flex space-x-2">
-                            <p>Comparison Function: </p>
-                            <select 
-                                className="text-black"
-                                onChange={event => {
-                                    setCfg({
-                                        ...cfg,
-                                        sortComparisonFunction: event.target.value
-                                    })
-                                }}
-                            >
-                                <option value="ascending">Ascending</option>
-                                <option value="descending">Descending</option>
-                            </select>
-                        </div>
-                    </div>
+                        <Selector
+                            text="Comparison Function:"
+                            setValue={value => {
+                                setCfg({
+                                    ...cfg,
+                                    sortComparisonFunction: value
+                                })
+                            }}
+                        >
+                            <option value="ascending">Ascending</option>
+                            <option value="descending">Descending</option>
+                        </Selector>
+                    </ConfigContainer>
                 </div>
             </form>
         </div>
