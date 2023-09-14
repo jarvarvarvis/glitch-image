@@ -20,7 +20,11 @@ import { LuminanceEvaluator } from "@/glitching/evaluator/luminance";
 import { AscendingComparison } from "@/glitching/comparisons/ascending";
 import { DescendingComparison } from "@/glitching/comparisons/descending";
 import { MaskedSpanGatherer } from "@/glitching/gatherers/masked";
+
 import { RowColumnImageView } from "@/glitching/views/row_column";
+import { ColumnRowImageView } from "@/glitching/views/column_row";
+import { ReverseRowColumnImageView } from "@/glitching/views/reverse_row_column";
+import { ReverseColumnRowImageView } from "@/glitching/views/reverse_column_row";
 
 export const config = {
     api: {
@@ -164,7 +168,26 @@ export default async function handler(req, res) {
         }
         );
 
-        var imageView = new RowColumnImageView(image);
+        var iamgeViewMap = new Map();
+        iamgeViewMap.set("row_col", img => new RowColumnImageView(img));
+        iamgeViewMap.set("col_row", img => new ColumnRowImageView(img));
+        iamgeViewMap.set("rev_row_col", img => new ReverseRowColumnImageView(img));
+        iamgeViewMap.set("rev_col_row", img => new ReverseColumnRowImageView(img));
+        
+        var imageViewFn = iamgeViewMap.get(cfg.imageIterationMode);
+        if (!imageViewFn) {
+            res.status(400).json({
+                error: {
+                    message: `Image iteration (internal view) mode '${cfg.imageIterationMode}' was not found` 
+                },
+            });
+            return;
+        }
+
+        var imageView = imageViewFn(image);
+        console.log("Image View:");
+        console.log(imageView);
+
         var resultImage = glitcher.glitchImage(imageView);
 
         console.log("Finished glitching");

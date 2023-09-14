@@ -32,11 +32,12 @@ export default function Home() {
         getFilterMask: false,
         filterFunction: "luminance",
         minThreshold: 0,
-        maxThreshold: 60,
+        maxThreshold: 255,
 
         addRandomSpanOffset: true,
-        maxRandomSpanOffset: 0,
+        maxRandomSpanOffset: 200,
         randomSpanOffsetChance: 0.5,
+        imageIterationMode: "row_col",
         
         sortEvaluatorFunction: "rgb",
         sortComparisonFunction: "ascending",
@@ -349,6 +350,20 @@ export default function Home() {
                                 randomSpanOffsetChance: value / 100
                             })}
                         />
+                        <Selector
+                            text="Image Iteration Mode:"
+                            setValue={value => {
+                                setCfg({
+                                    ...cfg,
+                                    imageIterationMode: value
+                                })
+                            }}
+                        >
+                            <option value="row_col">Row per Column (Down)</option>                            
+                            <option value="col_row">Column per Row (Right)</option>
+                            <option value="rev_row_col">Reverse Row per Column (Up)</option>
+                            <option value="rev_col_row">Reverse Column per Row (Left)</option>
+                        </Selector>
                     </ConfigContainer>
 
                     <hr className="border-dashed" />

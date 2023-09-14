@@ -1,9 +1,9 @@
 import { ColumnData, ImageView, RowData } from "../image_view";
 
 export class RowColumnRowData extends RowData {
-    constructor(y) {
+    constructor(x) {
         super();
-        this.y = y;
+        this.x = x;
     }
 }
 
@@ -18,7 +18,7 @@ export class RowColumnColumnData extends ColumnData {
         return {
             x: this.x,
             y: this.y,
-        };
+        }
     }
 }
 
@@ -28,14 +28,14 @@ export class RowColumnImageView extends ImageView {
     }
 
     *rows() {
-        for (var y = 0; y < this.image.height; y++) {
-            yield new RowColumnRowData(y);
+        for (var x = 0; x < this.image.width; x++) {
+            yield new RowColumnRowData(x);
         }
     }
 
     *columns(row) {
-        for (var x = 0; x < this.image.width; x++) {
-            yield new RowColumnColumnData(x, row.y);
+        for (var y = 0; y < this.image.height; y++) {
+            yield new RowColumnColumnData(row.x, y);
         }
     }
 }
