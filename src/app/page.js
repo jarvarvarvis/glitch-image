@@ -316,6 +316,32 @@ export default function Home() {
                     <hr className="border-dashed" />
 
                     <ConfigContainer>
+                        <Checkbox
+                            checked={cfg.addRandomSpanOffset}
+                            onChecked={checked => {
+                                setCfg({
+                                    ...cfg,
+                                    addRandomSpanOffset: checked
+                                })
+                            }}
+                            text="Add Random Span Offset?"
+                            />
+                        <Slider
+                            text="Max Offset"
+                            min={0}
+                            max={4000}
+                            disabled={!cfg.addRandomSpanOffset}
+                            value={cfg.maxRandomSpanOffset}
+                            setValue={value => setCfg({
+                                ...cfg,
+                                maxRandomSpanOffset: value
+                            })}
+                        />
+                    </ConfigContainer>
+
+                    <hr className="border-dashed" />
+
+                    <ConfigContainer>
                         <Selector
                             text="Sort Evaluator Function:"
                             setValue={value => {
