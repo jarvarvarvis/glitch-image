@@ -378,9 +378,12 @@ export default function Home() {
                                 })
                             }}
                         >
+                            <option value="luminance">Luminance</option>
                             <option value="rgb">Weighted RGB</option>
                             <option value="bgr">Weighted BGR</option>
-                            <option value="luminance">Luminance</option>
+                            <option value="r">Red</option>
+                            <option value="g">Green</option>
+                            <option value="b">Blue</option>
                         </Selector>
 
                         <Selector

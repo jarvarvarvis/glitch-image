@@ -14,8 +14,9 @@ import { ChannelValueFilter } from "@/glitching/filters/channel_value";
 
 import { RandomOffsetMaskedSpanGatherer } from "@/glitching/gatherers/random_offset_masked";
 
-import { WeightedChannelEvaluator } from "@/glitching/evaluator/weighted_channel";
 import { LuminanceEvaluator } from "@/glitching/evaluator/luminance";
+import { SingleChannelEvaluator } from "@/glitching/evaluator/single_channel";
+import { WeightedChannelEvaluator } from "@/glitching/evaluator/weighted_channel";
 
 import { AscendingComparison } from "@/glitching/comparisons/ascending";
 import { DescendingComparison } from "@/glitching/comparisons/descending";
@@ -118,9 +119,12 @@ export default async function handler(req, res) {
 
         // Glitch the image
         var evaluatorMap = new Map();
+        evaluatorMap.set("luminance", new LuminanceEvaluator());
         evaluatorMap.set("rgb", new WeightedChannelEvaluator([0, 1, 2]));
         evaluatorMap.set("bgr", new WeightedChannelEvaluator([2, 1, 0]));
-        evaluatorMap.set("luminance", new LuminanceEvaluator());
+        evaluatorMap.set("r", new SingleChannelEvaluator(0));
+        evaluatorMap.set("g", new SingleChannelEvaluator(1));
+        evaluatorMap.set("b", new SingleChannelEvaluator(2));
 
         console.log("Starting glitching");
         var evaluator = evaluatorMap.get(cfg.sortEvaluatorFunction);
