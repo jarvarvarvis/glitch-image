@@ -1,4 +1,4 @@
 export class SpanGatherer {
-    gatherSpansAt(image, y) {
+    gatherSpansAt(imageView, row) {
     }
 }

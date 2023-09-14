@@ -1,17 +1,29 @@
-export class PixelRowSpan {
-    constructor(lowerIndex, upperIndex) {
-        this.lowerIndex = lowerIndex;
-        this.upperIndex = upperIndex;
+export class PixelSpan {
+    constructor() {
+        this.coordinates = [];
     }
 
-    isInSpan(value) {
-        return value >= this.lowerIndex && value <= this.upperIndex;
+    addCoordinate(coordinate) {
+        this.coordinates.push(coordinate);
+    }
+
+    isInSpan(searched) {
+        return this.coordinates
+            .find(
+                value => value.x == searched.x && value.y == searched.y
+            ) != undefined;
+    }
+
+    findIndex(searched) {
+        return this.coordinates
+            .findIndex(
+                value => value.x == searched.x && value.y == searched.y
+            );
     }
 
     toString() {
-        return "PixelRowSpan(" +
-            "lowerIndex=" + this.lowerIndex +
-            ", upperIndex=" + this.upperIndex +
+        return "PixelSpan(" +
+            "coordinates=" + String(this.coordinates) +
             ")";
     }
 }

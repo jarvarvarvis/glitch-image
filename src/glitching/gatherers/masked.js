@@ -1,6 +1,6 @@
 import { arraysEqual } from "@/utils/array";
 
-import { PixelRowSpan } from "../span";
+import { PixelSpan } from "../span";
 import { SpanGatherer } from "../span_gatherer";
 
 export class MaskedSpanGatherer extends SpanGatherer {
@@ -9,32 +9,34 @@ export class MaskedSpanGatherer extends SpanGatherer {
         this.maskImage = maskImage;
     }
 
-    gatherSpansAt(image, y) {
+    gatherSpansAt(imageView, row) {
         var spans = [];
 
-        var startedOnSpan = false;
-        var spanStart = 0;
+        var lastSpanCompleted = true;
 
         var maskTrue = [255, 255, 255];
         var maskFalse = [0, 0, 0];
 
-        for (var x = 0; x < this.maskImage.width; x++) {
+        //for (var x = 0; x < this.maskImage.width; x++) {
+        for (var column of imageView.columns(row)) {
+            var { x, y } = column.getXY();
             var pixel = this.maskImage.getPixelXY(x, y);
 
-            if (arraysEqual(pixel, maskTrue) && !startedOnSpan) {
-                startedOnSpan = true;
-                spanStart = x;
+            if (arraysEqual(pixel, maskTrue)) {
+                if (lastSpanCompleted) {
+                    spans.push(new PixelSpan());
+                    lastSpanCompleted = false;
+                }
+
+                spans[spans.length - 1].addCoordinate({
+                    x: x,
+                    y: y
+                });
             }
 
-            if (arraysEqual(pixel, maskFalse) && startedOnSpan) {
-                startedOnSpan = false;
-                spans.push(new PixelRowSpan(spanStart, x - 1));
+            if (arraysEqual(pixel, maskFalse)) {
+                lastSpanCompleted = true;
             }
-        }
-
-        // Push left-over span
-        if (startedOnSpan) {
-            spans.push(new PixelRowSpan(spanStart, this.maskImage.width - 1));
         }
 
         return spans;

@@ -20,6 +20,7 @@ import { LuminanceEvaluator } from "@/glitching/evaluator/luminance";
 import { AscendingComparison } from "@/glitching/comparisons/ascending";
 import { DescendingComparison } from "@/glitching/comparisons/descending";
 import { MaskedSpanGatherer } from "@/glitching/gatherers/masked";
+import { RowColumnImageView } from "@/glitching/views/row_column";
 
 export const config = {
     api: {
@@ -162,7 +163,9 @@ export default async function handler(req, res) {
             );
         }
         );
-        var resultImage = glitcher.glitchImage(image);
+
+        var imageView = new RowColumnImageView(image);
+        var resultImage = glitcher.glitchImage(imageView);
 
         console.log("Finished glitching");
         

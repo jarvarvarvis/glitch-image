@@ -6,16 +6,16 @@ export class Glitcher {
         this.sortComparisonFunction = sortComparisonFunction;
     }
 
-    glitchImage(image) {
+    glitchImage(imageView) {
         var resultImage = Image.createFrom({
-            width: image.width,
-            height: image.height,
+            width: imageView.image.width,
+            height: imageView.image.height,
             kind: "RGB"
         });
 
-        for (var y = 0; y < image.height; y++) {
-            //console.log("Starting on row " + y);
-            var spans = this.spanGatherer.gatherSpansAt(image, y);
+        //for (var y = 0; y < image.height; y++) {
+        for (var row of imageView.rows()) {
+            var spans = this.spanGatherer.gatherSpansAt(imageView, row);
 
             // Gather the colors in all spans and sort them
             // using the provided comparison function
@@ -24,8 +24,8 @@ export class Glitcher {
                 var span = spans[i];
                 var spanColors = [];
 
-                for (var x = span.lowerIndex; x <= span.upperIndex; x++) {
-                    var pixel = image.getPixelXY(x, y);
+                for (var coordinate of span.coordinates) {
+                    var pixel = imageView.getPixelXY(coordinate.x, coordinate.y);
                     spanColors.push(pixel);
                 }
                 
@@ -34,16 +34,19 @@ export class Glitcher {
             }
 
             // Write into result image
-            for (var x = 0; x < image.width; x++) {
-                var currentColor = image.getPixelXY(x, y);
+            //for (var x = 0; x < image.width; x++) {
+            for (var column of imageView.columns(row)) {
+                var { x, y } = column.getXY();
+                var currentColor = imageView.getPixelXY(x, y);
 
                 // Find a span that contains the current X index
                 for (var i = 0; i < spans.length; i++) {
                     var span = spans[i];
                     var colors = spanColorsList[i];
 
-                    if (span.isInSpan(x)) {
-                        currentColor = colors[x - span.lowerIndex];
+                    var colorIndex = span.findIndex({x: x, y: y});
+                    if (colorIndex != -1) {
+                        currentColor = colors[colorIndex];
                         break;
                     }
                 }
