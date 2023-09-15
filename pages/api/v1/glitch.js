@@ -11,6 +11,7 @@ import { LuminanceFilter } from "@/glitching/filters/luminance";
 import { CompositeFilter } from "@/glitching/filters/composite";
 import { ThresholdFilter } from "@/glitching/filters/threshold";
 import { ChannelValueFilter } from "@/glitching/filters/channel_value";
+import { WeightedChannelFilter } from "@/glitching/filters/weighted_channel";
 
 import { RandomOffsetMaskedSpanGatherer } from "@/glitching/gatherers/random_offset_masked";
 
@@ -92,6 +93,9 @@ export default async function handler(req, res) {
         filterMap.set("red", new ChannelValueFilter(0));
         filterMap.set("green", new ChannelValueFilter(1));
         filterMap.set("blue", new ChannelValueFilter(2));
+        filterMap.set("weighted_red", new WeightedChannelFilter(0));
+        filterMap.set("weighted_green", new WeightedChannelFilter(1));
+        filterMap.set("weighted_blue", new WeightedChannelFilter(2));
 
         var filter = filterMap.get(cfg.filterFunction);
         if (!filter) {
@@ -100,6 +104,13 @@ export default async function handler(req, res) {
                     message: `Filter function '${cfg.filterFunction}' was not found` 
                 },
             });
+            return;
+        }
+
+        if (cfg.getFilterImage) {
+            var filterImage = filter.applyToImage(image);
+            await filterImage.save(file.filepath);
+            await sendFileDataToClient(res, file);
             return;
         }
 

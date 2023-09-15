@@ -9,14 +9,14 @@ export class ExtractChannelFilter extends Filter {
     applyToPixel(image, x, y) {
         var pixel = image.getPixelXY(x, y);
         
-        if (this.channel < result.length) {
+        if (this.channel < pixel.length) {
+            var value = pixel[this.channel];
             var result = [];
             for (var i = 0; i < pixel.length; i++) {
                 result.push(0);
+                result[i] = value;
             }
-            
-            var value = pixel[this.channel];
-            result[this.channel] = value;
+
             return result;
         }
 

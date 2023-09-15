@@ -29,6 +29,7 @@ export default function Home() {
     
     // Config-related state
     const [cfg, setCfg] = useState({
+        getFilterImage: false,
         getFilterMask: false,
         filterFunction: "luminance",
         minThreshold: 0,
@@ -273,17 +274,6 @@ export default function Home() {
 
                 <div className="space-y-4 flow max-w-[500px]">
                     <ConfigContainer>
-                        <Checkbox 
-                            text="Get Filter Mask?"
-                            checked={cfg.getFilterMask}
-                            onChecked={checked => {
-                                setCfg({
-                                    ...cfg,
-                                    getFilterMask: checked
-                                })
-                            }}
-                        />
-
                         <Selector
                             text="Filter Function"
                             setValue={value => {
@@ -297,6 +287,9 @@ export default function Home() {
                             <option value="red">Red</option>
                             <option value="green">Green</option>
                             <option value="blue">Blue</option>
+                            <option value="weighted_red">Weighted Red</option>
+                            <option value="weighted_green">Weighted Green</option>
+                            <option value="weighted_blue">Weighted Blue</option>
                         </Selector>
                         
                         <Slider
@@ -312,6 +305,27 @@ export default function Home() {
                             max={255}
                             value={cfg.maxThreshold}
                             setValue={value => setMaxThreshold(value)}
+                        />
+                        
+                        <Checkbox 
+                            text="Get Filter Image?"
+                            checked={cfg.getFilterImage}
+                            onChecked={checked => {
+                                setCfg({
+                                    ...cfg,
+                                    getFilterImage: checked
+                                })
+                            }}
+                        />
+                        <Checkbox 
+                            text="Get Filter Mask?"
+                            checked={cfg.getFilterMask}
+                            onChecked={checked => {
+                                setCfg({
+                                    ...cfg,
+                                    getFilterMask: checked
+                                })
+                            }}
                         />
                     </ConfigContainer>
 
